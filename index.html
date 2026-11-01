@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Izon Falzo</title>
+  <style>
+@font-face {
+  font-family: "Bobbol";
+  src: url("Bobbol-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+:root {
+  --accent: #0b59f1;       
+  --accent-text: #0b59f1;  
+  --bg: #ffffff;
+  --surface: #f3f5f9;    
+  --text: #121826;
+  --muted: #6b7280;
+  --line: #e4e8ef;
+
+  --font: "Bobbol", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 10px;
+  --max: 1120px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent-text: #6e9bff;
+    --bg: #0e1117;
+    --surface: #171b23;
+    --text: #e9ecf2;
+    --muted: #9aa3b2;
+    --line: #262c38;
+    color-scheme: dark;
+  }
+}
+
+/* ============ Base ============ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 1rem/1.6 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+main { flex: 1; outline: none; }
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+code {
+  font-size: .9em;
+  background: var(--surface);
+  padding: .1em .4em;
+  border-radius: 4px;
+}
+
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: var(--max);
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.25rem clamp(1rem, 4vw, 2rem);
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.mark {
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 3px;
+}
+
+.site-nav { display: flex; gap: 1.5rem; }
+.site-nav a { color: var(--muted); font-weight: 500; }
+.site-nav a:hover { color: var(--text); }
+
+.site-footer {
+  max-width: var(--max);
+  width: 100%;
+  margin: 0 auto;
+  padding: 3rem clamp(1rem, 4vw, 2rem) 2rem;
+  color: var(--muted);
+  font-size: .875rem;
+}
+
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  min-height: 44px;
+  padding: .55rem 1.1rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.btn:hover { filter: brightness(1.08); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  padding-inline: .9rem;
+}
+.btn-ghost:hover { background: var(--surface); filter: none; }
+
+
+.intro {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: clamp(2rem, 7vw, 4.5rem) clamp(1rem, 4vw, 2rem) clamp(1.5rem, 4vw, 2.5rem);
+}
+.intro h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 6vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+.intro p {
+  margin: .75rem 0 0;
+  max-width: 45ch;
+  color: var(--muted);
+  font-size: 1.125rem;
+}
+
+.grid {
+  list-style: none;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 4vw, 2rem);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: clamp(1.25rem, 3vw, 2rem) clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.tile { display: block; }
+
+.thumb {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .3s ease;
+}
+.tile:hover .thumb img { transform: scale(1.03); }
+
+.pages {
+  position: absolute;
+  right: .6rem;
+  bottom: .6rem;
+  padding: .15rem .55rem;
+  border-radius: 999px;
+  background: rgba(14, 17, 23, .72);
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 600;
+}
+
+.tile-title {
+  display: block;
+  margin-top: .7rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.tile:hover .tile-title { color: var(--accent-text); }
+.tile-date { display: block; color: var(--muted); font-size: .875rem; }
+
+.empty {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 4vw, 2rem);
+  color: var(--muted);
+}
+
+/* ============ About ============ */
+.about {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: clamp(2rem, 7vw, 4.5rem) clamp(1rem, 4vw, 2rem);
+}
+.about h1 {
+  margin: 0 0 1.25rem;
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.about p { margin: 0 0 1rem; }
+.byline { color: var(--muted); margin-bottom: 2rem !important; }
+
+
+.viewer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(.5rem, 3vw, 2rem) clamp(1rem, 4vw, 2rem) 0;
+}
+
+.frame {
+  position: relative;
+  max-width: 100%;
+}
+.frame img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(78vh, 840px);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .15);
+  opacity: .9;
+}
+.arrow:hover { opacity: 1; color: var(--accent-text); }
+.arrow-prev { left: .75rem; }
+.arrow-next { right: .75rem; }
+.arrow.hidden { visibility: hidden; }
+
+.dots {
+  display: flex;
+  gap: .5rem;
+  margin-top: 1rem;
+}
+.dots a {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--line);
+}
+.dots a[aria-current] { background: var(--accent); }
+.dots a { position: relative; }
+.dots a::after { content: ""; position: absolute; inset: -10px; } /* bigger tap area */
+
+.info {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+.info h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+.info p { margin: .25rem 0 0; color: var(--muted); font-size: .9rem; }
+
+.comic-nav {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: min(100%, 560px);
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+.comic-nav > :first-child { justify-self: start; }
+.comic-nav > :last-child { justify-self: end; }
+.comic-nav > :nth-child(2) { color: var(--muted); }
+
+/* Missing image note */
+.missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .25rem;
+  width: min(78vh, 100%);
+  aspect-ratio: 1 / 1;
+  padding: 1.5rem;
+  border: 1.5px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: .85rem;
+  text-align: center;
+  word-break: break-all;
+}
+.missing strong { color: var(--text); font-size: .95rem; }
+.thumb .missing { width: 100%; height: 100%; border: 0; border-radius: 0; font-size: .75rem; }
+
+@media (max-width: 560px) {
+  .viewer { padding-inline: 0; }
+  .frame img { border-radius: 0; }
+  .info, .comic-nav { padding-inline: 1rem; }
+  .comic-nav .btn { padding-inline: .6rem; }
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 1.25rem .75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb img { transition: none; }
+  .tile:hover .thumb img { transform: none; }
+}
+
+/* Shown while a comic's pages are being found */
+.loading {
+  width: min(78vh, 100%);
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius);
+  background: var(--surface);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .loading { animation: none; } }
+
+
+.ig-crop {
+  --ig-top: 54px;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--surface);
+}
+.ig-crop iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400px;
+  height: 900px;
+  border: 0;
+  pointer-events: none;
+  transform-origin: 0 0;
+  transform:
+    scale(calc(var(--s, .55) * var(--z, 1)))
+    translate(calc(-1 * var(--dx, 0px)), calc(-1 * (var(--ig-top) + var(--dy, 0px))));
+}
+
+.embed {
+  width: min(100%, 540px);
+  min-height: 300px;
+}
+.embed .instagram-media {
+  margin: 0 auto !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 540px !important;
+  border-radius: var(--radius) !important;
+}
+.embed blockquote:not(iframe) {
+  padding: 2rem;
+  background: var(--surface);
+  text-align: center;
+}
+.embed blockquote a { color: var(--accent-text); font-weight: 600; }
+
+.info-top { margin: 0 0 1.25rem; }
+
+.about-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+.warn {
+  max-width: var(--max);
+  margin: 0 auto 1.5rem;
+  padding: 0 clamp(1rem, 4vw, 2rem);
+  color: #c2410c;
+  font-size: .9rem;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  max-width: var(--max);
+  margin: 0 auto 1.5rem;
+  padding: .75rem clamp(1rem, 4vw, 2rem);
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.chips {
+  display: flex;
+  gap: .4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  min-width: 0;
+}
+.chips::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex: none;
+  padding: .4rem .85rem;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: .9rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.chip:hover { color: var(--accent-text); }
+.chip[aria-current] { background: var(--accent); color: #fff; }
+
+.controls { display: flex; align-items: center; gap: .5rem; flex: none; }
+
+.ctl {
+  min-height: 36px;
+  padding: .35rem .75rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: 500 .875rem/1 var(--font);
+  cursor: pointer;
+}
+.ctl:hover { color: var(--text); background: var(--surface); }
+
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--surface);
+}
+.seg button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--bg); color: var(--accent-text); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+
+/* ============ Feed ============ */
+.feed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  padding: 0 clamp(1rem, 4vw, 2rem);
+}
+
+.post { width: min(100%, 540px); }
+
+.post-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .75rem;
+}
+.post-title { display: block; font-weight: 600; line-height: 1.3; }
+.post-title:hover { color: var(--accent-text); }
+.post-date { display: block; color: var(--muted); font-size: .85rem; }
+
+.post-tags { display: flex; flex-wrap: wrap; gap: .35rem; justify-content: flex-end; }
+.post-tags.center { justify-content: center; margin-top: .6rem; }
+.post-tags a {
+  padding: .15rem .6rem;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: .8rem;
+}
+.post-tags a:hover { color: var(--accent-text); }
+
+.post .embed { width: 100%; }
+
+
+.embed.pending {
+  aspect-ratio: 4 / 5;
+  min-height: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+@media (max-width: 560px) {
+  .toolbar { flex-wrap: wrap; }
+  .chips { flex-basis: 100%; order: 2; }
+  .controls { margin-left: auto; }
+  .feed { padding: 0; gap: 2.25rem; }
+  .post-head { padding: 0 1rem; }
+}
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <a href="#/" class="logo"><span class="mark" aria-hidden="true"></span><span id="site-title"></span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="#/random">Random</a>
+      <a href="#/about">About</a>
+    </nav>
+  </header>
+
+  <main id="app" tabindex="-1"></main>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script>
+
+const COMIC = {
+  title: "Izon Falzo",
+  tagline: "comics cafe, pick a flavor at your own risk.",
+  author: "Izon Falzo",
+  instagram: "izonfalzo",   
+  showCaptions: true,
+
+  
+  tagOrder: ["physics", "sweet", "sour"],
+
+  defaultShape: "square",
+  about: `I draw :) follow me on instagram for more!`,
+
+  comics: [
+    { link: "https://www.instagram.com/p/De6-OPpFIJy/?utm_source=ig_web_copy_link&mdxt=MzRlODBiNWFlZA==", title: "Mixed Signals", tags: ["sour","savory"]},
+    { link: "https://www.instagram.com/p/DbRyBfEFIu0/?utm_source=ig_web_copy_link&srtk=MzRlODBiNWFlZA==", title: "Lost in Translations", tags: ["sour","warm"]},
+    { link: "https://www.instagram.com/p/DbTLyVuFYq2/?utm_source=ig_web_copy_link&xtok=MzRlODBiNWFlZA==", title: "Tiramitsu", tags: ["sweet", "sour"]},
+    { link: "https://www.instagram.com/p/DcFOA0XlKYH/?utm_source=ig_web_copy_link&srtk=MzRlODBiNWFlZA==", title: "Talk", tags: ["savory", "sour"]},
+    { link: "https://www.instagram.com/p/DcFV6_kFQxD/?utm_source=ig_web_copy_link&mdxt=MzRlODBiNWFlZA==", title: "Don't Worry", tags: ["warm"]},
+    { link: "https://www.instagram.com/p/DcJXAhildZF/?utm_source=ig_web_copy_link&srtk=MzRlODBiNWFlZA==", title: "Red Velvet", tags: ["sweet", "warm"]},
+    { link: "https://www.instagram.com/p/DcR4I8HFOWV/?utm_source=ig_web_copy_link&vrfl=MzRlODBiNWFlZA==", title: "Questions", tags: ["sour"]},
+    { link: "https://www.instagram.com/p/DcV-8JclYef/?utm_source=ig_web_copy_link&mdxt=MzRlODBiNWFlZA==", title: "24", tags: ["sweet","sour"]},
+    { link: "https://www.instagram.com/p/DcbpEX5FMSU/?utm_source=ig_web_copy_link&cplk=MzRlODBiNWFlZA==", title: "Feelings", tags: ["sweet","sour"]},
+    { link: "https://www.instagram.com/p/DceIzVMlPeq/?utm_source=ig_web_copy_link&dlrf=MzRlODBiNWFlZA==", title: "Wrong", tags: ["warm"]},
+    { link: "https://www.instagram.com/p/DcomtVbFMgH/?utm_source=ig_web_copy_link&srtk=MzRlODBiNWFlZA==", title: "(Un)ravel", tags: ["warm", "sour"]},
+    { link: "https://www.instagram.com/p/Dczax7VFMVr/?utm_source=ig_web_copy_link&obrf=MzRlODBiNWFlZA==", title: "Consult" ,tags: ["warm"]},
+    { link: "https://www.instagram.com/p/DdPsr-hFD7s/?utm_source=ig_web_copy_link&obrf=MzRlODBiNWFlZA==", title: "Thai 101.1", tags: ["sour"]},
+    { link: "https://www.instagram.com/p/DdVJIXTlCmZ/?utm_source=ig_web_copy_link&srtk=MzRlODBiNWFlZA==", title: "Thai 101.2", tags: ["sour"]},
+    { link: "https://www.instagram.com/p/DdzwRQ0FA9n/?utm_source=ig_web_copy_link&mdxt=MzRlODBiNWFlZA==", title: "I know", tags: ["savory"]},
+    { link: "https://www.instagram.com/p/Dd-OqNIlJHr/?utm_source=ig_web_copy_link&dlrf=MzRlODBiNWFlZA==", title: "Seeing", tags: ["sweet", "sour"]},
+    { link: "https://www.instagram.com/p/DeH9KHhgS-j/?utm_source=ig_web_copy_link&exln=MzRlODBiNWFlZA==", title: "Dilemma", tags: ["warm", "sour"]},
+    { link: "https://www.instagram.com/p/DeMZtoTlSH2/?utm_source=ig_web_copy_link&xtok=MzRlODBiNWFlZA==", title: "Identity", tags: ["warm"]},
+    { link: "https://www.instagram.com/p/DemPETWFR2Q/?utm_source=ig_web_copy_link&obrf=MzRlODBiNWFlZA==", title: "Physics", tags: ["physics"]},
+    { link: "https://www.instagram.com/p/DefL0hHFLAL/?utm_source=ig_web_copy_link&psln=MzRlODBiNWFlZA==", title: "Oatmeal Cookies", tags: ["sweet","sour"]},
+    { link: "https://www.instagram.com/p/DewmD9-lZEp/?utm_source=ig_web_copy_link&dlrf=MzRlODBiNWFlZA==", title: "You", tags: ["sweet", "physics"]},
+    { link: "https://www.instagram.com/p/DbR0_yDFX_6/?utm_source=ig_web_copy_link&rpxt=MzRlODBiNWFlZA==", title: "Passion", tags: ["physics"]},
+    { link: "https://www.instagram.com/p/DfCiK8HFQNv/?utm_source=ig_web_copy_link&obrf=MzRlODBiNWFlZA==", title: "Midterm", tags: ["physics"]}
+    // { link: "https://www.instagram.com/p/XXXXXXXXXXX/", title: "Rainy Day", date: "2026-03-20", tags: ["cats"] },
+  ]
+};
+  </script>
+  <script>
+    (() => {
+  const app = document.getElementById("app");
+
+
+  const esc = (s) =>
+    String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const slugify = (s) =>
+    String(s).toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  function formatDate(ms) {
+    if (ms == null) return "";
+    return new Date(ms).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  }
+
+  function store(key, value) {
+    try {
+      if (value === undefined) return localStorage.getItem(key);
+      localStorage.setItem(key, value);
+    } catch (e) { return null; }
+  }
+
+  
+  function parseLink(url) {
+    const m = String(url).match(/instagram\.com\/(?:[\w.]+\/)?(p|reel|tv)\/([\w-]+)/i);
+    return m ? { kind: m[1].toLowerCase() === "p" ? "p" : "reel", id: m[2] } : null;
+  }
+
+  const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  function postedAt(code) {
+    try {
+      let id = 0n;
+      for (const ch of code.slice(0, 11)) {
+        const v = B64.indexOf(ch);
+        if (v < 0) return null;
+        id = id * 64n + BigInt(v);
+      }
+      const ms = Number((id >> 23n) + 1314220021721n);
+      return ms > 1262304000000 && ms < Date.now() + 864e5 ? ms : null; // sanity check
+    } catch (e) { return null; }
+  }
+
+
+  const problems = [];
+  const all = (COMIC.comics || []).map((entry, i) => {
+    const c = typeof entry === "string" ? { link: entry } : { ...entry };
+    const info = parseLink(c.link);
+    if (!info) { problems.push(c.link); return null; }
+    c.id = info.id;
+    c.permalink = `https://www.instagram.com/${info.kind}/${info.id}/`;
+    c.label = c.title || `No. ${i + 1}`;
+    c.tags = (Array.isArray(c.tags) ? c.tags : c.tags ? [c.tags] : []).map(String);
+    const written = c.date ? Date.parse(c.date + "T00:00:00") : NaN;
+    c.time = !isNaN(written) ? written : postedAt(c.id);
+    c.order = i;
+    return c;
+  }).filter(Boolean);
+
+
+  all.sort((a, b) => (a.time ?? Infinity) - (b.time ?? Infinity) || a.order - b.order);
+
+
+  const tagMap = new Map();
+  (COMIC.tagOrder || []).forEach((t) => tagMap.set(slugify(t), t));
+  all.forEach((c) => c.tags.forEach((t) => { if (!tagMap.has(slugify(t))) tagMap.set(slugify(t), t); }));
+  const usedTags = [...tagMap].filter(([slug]) => all.some((c) => c.tags.some((t) => slugify(t) === slug)));
+
+  const newestFirst = [...all].reverse();
+  const link = (c) => `#/c/${c.id}`;
+
+  const VIEW_KEY = "comics-view";
+  const SORT_KEY = "comics-sort";
+  const getView = () => (store(VIEW_KEY) === "feed" ? "feed" : "grid");
+  const getSort = () => (store(SORT_KEY) === "oldest" ? "oldest" : "newest");
+
+
+  let igRequested = false;
+  function processEmbeds() {
+    if (window.instgrm) { window.instgrm.Embeds.process(); return; }
+    if (igRequested) return;
+    igRequested = true;
+    const s = document.createElement("script");
+    s.src = "https://www.instagram.com/embed.js";
+    s.async = true;
+    s.onload = () => window.instgrm && window.instgrm.Embeds.process();
+    document.body.appendChild(s);
+  }
+
+  const embedHTML = (c) => `
+    <blockquote class="instagram-media" data-instgrm-permalink="${esc(c.permalink)}" data-instgrm-version="14" ${COMIC.showCaptions ? "data-instgrm-captioned" : ""}>
+      <a href="${esc(c.permalink)}" target="_blank" rel="noopener">View on Instagram</a>
+    </blockquote>`;
+
+
+  let lazy = null;
+  function watchLazy() {
+    lazy = new IntersectionObserver((entries) => {
+      let added = false;
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        lazy.unobserve(el);
+        el.innerHTML = embedHTML(newestFirst.find((c) => c.id === el.dataset.id));
+        el.classList.remove("pending");
+        added = true;
+      });
+      if (added) processEmbeds();
+    }, { rootMargin: "1200px 0px" });
+    app.querySelectorAll(".embed.pending").forEach((el) => lazy.observe(el));
+  }
+
+  function shapeRatio(c) {
+    const v = String(c.shape || COMIC.defaultShape || "square").trim().toLowerCase();
+    if (v === "portrait") return 5 / 4;
+    if (v === "landscape") return 1 / 1.91;
+    const m = v.match(/^([\d.]+)\s*[:x\/]\s*([\d.]+)$/);
+    if (m && +m[1] > 0 && +m[2] > 0) return +m[2] / +m[1];
+    return 1;
+  }
+  function ratioStyle(r) {
+    const z = r < 1 ? 1 / r : 1;         
+    const view = 400 / z;                 
+    const dx = 200 - view / 2;             
+    const dy = 200 * r - view / 2;        
+    return `--z:${z.toFixed(4)};--dx:${dx.toFixed(2)}px;--dy:${dy.toFixed(2)}px`;
+  }
+  const cropStyle = (c) => ratioStyle(shapeRatio(c));
+
+
+  function setRatio(box, r) {
+    ratioStyle(r).split(";").forEach((pair) => {
+      const [k, v] = pair.split(":");
+      box.style.setProperty(k, v);
+    });
+  }
+
+  
+  const measured = new Map(); 
+
+  window.addEventListener("message", (e) => {
+    if (!/(^|\.)instagram\.com$/.test((() => { try { return new URL(e.origin).hostname; } catch (_) { return ""; } })())) return;
+    let d = e.data;
+    if (typeof d === "string") { try { d = JSON.parse(d); } catch (_) { return; } }
+    if (!d || d.type !== "MEASURE" || !d.details) return;
+    const h = Number(d.details.height);
+    if (!h) return;
+    const frame = [...document.querySelectorAll(".ig-crop iframe")].find((f) => f.contentWindow === e.source);
+    if (!frame) return;
+    measured.set(frame.dataset.id, h);
+    applyAutoShapes();
+  });
+
+  function applyAutoShapes() {
+    if (measured.size < 3) return;
+    const counts = new Map();
+    measured.forEach((h) => { const k = Math.round(h / 3) * 3; counts.set(k, (counts.get(k) || 0) + 1); });
+    const [squareHeight, n] = [...counts].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0];
+    if (n < 2) return;  
+    const chrome = squareHeight - 400;
+
+    document.querySelectorAll(".ig-crop[data-auto]").forEach((box) => {
+      const h = measured.get(box.dataset.id);
+      if (!h) return;
+      let r = (h - chrome) / 400;
+      if (!(r > 0.45 && r < 1.35)) return;          
+      if (Math.abs(r - 1) < 0.03) r = 1;
+      else if (Math.abs(r - 1.25) < 0.03) r = 1.25; 
+      setRatio(box, r);
+    });
+  }
+
+
+  const resizer = new ResizeObserver((entries) =>
+    entries.forEach((e) => e.target.style.setProperty("--s", e.contentRect.width / 400))
+  );
+
+
+  function renderHome(tagSlug) {
+    const view = getView();
+    const sort = getSort();
+    const tagName = tagSlug ? tagMap.get(tagSlug) : null;
+    document.title = tagName ? `${tagName} – ${COMIC.title}` : COMIC.title;
+
+    let list = sort === "newest" ? newestFirst : [...newestFirst].reverse();
+    if (tagSlug) list = list.filter((c) => c.tags.some((t) => slugify(t) === tagSlug));
+
+    const chips = usedTags.length
+      ? `<div class="chips" role="list">
+          <a role="listitem" class="chip" href="#/" ${!tagSlug ? 'aria-current="page"' : ""}>All</a>
+          ${usedTags.map(([slug, name]) =>
+            `<a role="listitem" class="chip" href="#/t/${slug}" ${slug === tagSlug ? 'aria-current="page"' : ""}>${esc(name)}</a>`).join("")}
+        </div>`
+      : `<div></div>`;
+
+    const toolbar = `
+      <div class="toolbar">
+        ${chips}
+        <div class="controls">
+          <button type="button" class="ctl" id="sort-btn">${sort === "newest" ? "Newest first" : "Oldest first"}</button>
+          <div class="seg" role="group" aria-label="Layout">
+            <button type="button" data-view="feed" aria-pressed="${view === "feed"}" aria-label="Feed">${icon("feed")}</button>
+            <button type="button" data-view="grid" aria-pressed="${view === "grid"}" aria-label="Grid">${icon("grid")}</button>
+          </div>
+        </div>
+      </div>`;
+
+    let body;
+    if (!list.length) {
+      body = `<p class="empty">${all.length ? "No comics with this tag yet." : "No comics yet. Paste an Instagram link into <code>comics.js</code>."}</p>`;
+    } else if (view === "feed") {
+      body = `<div class="feed">${list.map((c) => `
+        <article class="post">
+          <header class="post-head">
+            <div>
+              <a class="post-title" href="${link(c)}">${esc(c.label)}</a>
+              ${c.time ? `<span class="post-date">${formatDate(c.time)}</span>` : ""}
+            </div>
+            ${c.tags.length ? `<div class="post-tags">${c.tags.map((t) => `<a href="#/t/${slugify(t)}">${esc(t)}</a>`).join("")}</div>` : ""}
+          </header>
+          <div class="embed pending" data-id="${esc(c.id)}"></div>
+        </article>`).join("")}
+      </div>`;
+    } else {
+      body = `<ul class="grid">${list.map((c) => `
+        <li>
+          <a class="tile" href="${link(c)}" aria-label="${esc(c.label)}">
+            <div class="thumb">
+              ${c.thumb
+                ? `<img src="${esc(c.thumb)}" alt="" loading="lazy">`
+                : `<div class="ig-crop" data-id="${esc(c.id)}" ${c.shape ? "" : "data-auto"} style="${cropStyle(c)}"><iframe data-id="${esc(c.id)}" src="https://www.instagram.com/p/${esc(c.id)}/embed/" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" title=""></iframe></div>`}
+            </div>
+            ${c.title ? `<!--span class="tile-title">${esc(c.title)}</span-->` : ""}
+            
+          </a>
+        </li>`).join("")}
+      </ul>`;
+    }
+
+    app.innerHTML = `
+      <section class="intro">
+        <h1>${esc(tagName || COMIC.title)}</h1>
+        ${tagName
+          ? `<p>${list.length} comic${list.length === 1 ? "" : "s"}</p>`
+          : COMIC.tagline ? `<p>${esc(COMIC.tagline)}</p>` : ""}
+      </section>
+      ${problems.length ? `<p class="warn">These links in <code>comics.js</code> aren’t Instagram post links: ${problems.map((p) => `<code>${esc(p)}</code>`).join(", ")}</p>` : ""}
+      ${toolbar}
+      ${body}`;
+
+    app.querySelector("#sort-btn").addEventListener("click", () => {
+      store(SORT_KEY, sort === "newest" ? "oldest" : "newest");
+      renderHome(tagSlug);
+    });
+    app.querySelectorAll("[data-view]").forEach((b) =>
+      b.addEventListener("click", () => { store(VIEW_KEY, b.dataset.view); renderHome(tagSlug); }));
+
+    if (view === "feed") watchLazy();
+    else {
+      app.querySelectorAll(".ig-crop").forEach((el) => resizer.observe(el));
+      applyAutoShapes(); 
+    }
+  }
+
+  function renderAbout() {
+    document.title = `About – ${COMIC.title}`;
+    const paras = String(COMIC.about || "").split(/\n\s*\n/).map((p) => `<p>${esc(p.trim())}</p>`).join("");
+    const handle = String(COMIC.instagram || "").replace(/^@/, "");
+    app.innerHTML = `
+      <section class="about">
+        <h1>About</h1>
+        ${paras}
+        <div class="about-actions">
+          ${handle ? `<a class="btn btn-ghost" href="https://www.instagram.com/${esc(handle)}/" target="_blank" rel="noopener">@${esc(handle)}</a>` : ""}
+        </div>
+      </section>`;
+  }
+
+  function renderComic(id) {
+    const i = newestFirst.findIndex((c) => c.id === id);
+    if (i < 0) return renderNotFound();
+    const c = newestFirst[i];
+    const prev = newestFirst[i - 1];
+    const next = newestFirst[i + 1];
+    document.title = `${c.label} – ${COMIC.title}`;
+
+    app.innerHTML = `
+      <article class="viewer">
+        <header class="info info-top">
+          <h1>${esc(c.label)}</h1>
+          ${c.time ? `<p>${formatDate(c.time)}</p>` : ""}
+          ${c.tags.length ? `<div class="post-tags center">${c.tags.map((t) => `<a href="#/t/${slugify(t)}">${esc(t)}</a>`).join("")}</div>` : ""}
+        </header>
+        <div class="embed">${embedHTML(c)}</div>
+        <nav class="comic-nav" aria-label="More comics">
+          ${prev ? `<a class="btn btn-ghost" href="${link(prev)}">${chevron("left")}<span>Newer</span></a>` : `<span></span>`}
+          <a class="btn btn-ghost" href="#/">All comics</a>
+          ${next ? `<a class="btn btn-ghost" href="${link(next)}"><span>Older</span>${chevron("right")}</a>` : `<span></span>`}
+        </nav>
+      </article>`;
+
+    processEmbeds();
+    state.keys = { back: prev ? link(prev) : null, fwd: next ? link(next) : null };
+  }
+
+  function renderNotFound() {
+    document.title = COMIC.title;
+    app.innerHTML = `
+      <section class="about">
+        <h1>Not found</h1>
+        <p>This link doesn’t match any comic or tag. It may have been removed or renamed.</p>
+        <a class="btn" href="#/">See all comics</a>
+      </section>`;
+  }
+
+  function chevron(dir) {
+    const d = dir === "left" ? "M15 6l-6 6 6 6" : "M9 6l6 6-6 6";
+    return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+  }
+
+  function icon(name) {
+    const paths = name === "grid"
+      ? `<rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/>`
+      : `<rect x="5" y="3" width="14" height="10" rx="1.5"/><path d="M5 17h14M5 21h9"/>`;
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">${paths}</svg>`;
+  }
+
+
+  const state = { keys: null };
+
+  function route() {
+    const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
+    state.keys = null;
+    resizer.disconnect();
+    if (lazy) { lazy.disconnect(); lazy = null; }
+
+    if (parts[0] === "random" && all.length) {
+      location.replace(link(all[Math.floor(Math.random() * all.length)]));
+      return;
+    }
+    if (parts[0] === "c") renderComic(parts[1]);
+    else if (parts[0] === "t") tagMap.has(parts[1]) ? renderHome(parts[1]) : renderNotFound();
+    else if (parts[0] === "about") renderAbout();
+    else renderHome(null);
+
+    window.scrollTo(0, 0);
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (!state.keys || e.altKey || e.metaKey || e.ctrlKey) return;
+    if (e.key === "ArrowRight" && state.keys.fwd) location.hash = state.keys.fwd;
+    if (e.key === "ArrowLeft" && state.keys.back) location.hash = state.keys.back;
+  });
+
+  // document.getElementById("site-title").textContent = COMIC.title;
+  document.getElementById("site-footer").textContent =
+    `© ${new Date().getFullYear()} I-see Warisa Jaidee`;
+
+  window.addEventListener("hashchange", route);
+  route();
+})();
+  </script>
+</body>
+</html>
