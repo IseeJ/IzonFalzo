@@ -4,6 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Izon Falzo</title>
+  <link rel="preconnect" href="https://www.instagram.com">
+  <link rel="preconnect" href="https://static.cdninstagram.com" crossorigin>
+  <link rel="preconnect" href="https://scontent.cdninstagram.com" crossorigin>
+  <link rel="dns-prefetch" href="https://www.instagram.com">
+
   <style>
 @font-face {
   font-family: "Bobbol";
@@ -12,7 +17,6 @@
   font-style: normal;
   font-display: swap;
 }
-
 
 :root {
   --accent: #0b59f1;       
@@ -41,7 +45,6 @@
   }
 }
 
-/* ============ Base ============ */
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; }
 
@@ -71,7 +74,6 @@ code {
   padding: .1em .4em;
   border-radius: 4px;
 }
-
 
 .site-header {
   display: flex;
@@ -111,7 +113,6 @@ code {
   font-size: .875rem;
 }
 
-
 .btn {
   display: inline-flex;
   align-items: center;
@@ -131,7 +132,6 @@ code {
   padding-inline: .9rem;
 }
 .btn-ghost:hover { background: var(--surface); filter: none; }
-
 
 .intro {
   max-width: var(--max);
@@ -171,13 +171,6 @@ code {
   border-radius: var(--radius);
   background: var(--surface);
 }
-.thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform .3s ease;
-}
-.tile:hover .thumb img { transform: scale(1.03); }
 
 .pages {
   position: absolute;
@@ -207,7 +200,6 @@ code {
   color: var(--muted);
 }
 
-/* ============ About ============ */
 .about {
   max-width: 640px;
   margin: 0 auto;
@@ -221,7 +213,6 @@ code {
 }
 .about p { margin: 0 0 1rem; }
 .byline { color: var(--muted); margin-bottom: 2rem !important; }
-
 
 .viewer {
   display: flex;
@@ -275,8 +266,7 @@ code {
 }
 .dots a[aria-current] { background: var(--accent); }
 .dots a { position: relative; }
-.dots a::after { content: ""; position: absolute; inset: -10px; } /* bigger tap area */
-
+.dots a::after { content: ""; position: absolute; inset: -10px; }
 .info {
   text-align: center;
   margin-top: 1.5rem;
@@ -303,7 +293,6 @@ code {
 .comic-nav > :last-child { justify-self: end; }
 .comic-nav > :nth-child(2) { color: var(--muted); }
 
-/* Missing image note */
 .missing {
   display: flex;
   flex-direction: column;
@@ -322,7 +311,7 @@ code {
   word-break: break-all;
 }
 .missing strong { color: var(--text); font-size: .95rem; }
-.thumb .missing { width: 100%; height: 100%; border: 0; border-radius: 0; font-size: .75rem; }
+.thumb .missing { width: 100%; height: 100%; border: 0; border-radius: 0; font-size: .75rem; word-break: normal; }
 
 @media (max-width: 560px) {
   .viewer { padding-inline: 0; }
@@ -332,12 +321,6 @@ code {
   .grid { grid-template-columns: repeat(2, 1fr); gap: 1.25rem .75rem; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .thumb img { transition: none; }
-  .tile:hover .thumb img { transform: none; }
-}
-
-/* Shown while a comic's pages are being found */
 .loading {
   width: min(78vh, 100%);
   aspect-ratio: 1 / 1;
@@ -348,7 +331,6 @@ code {
 @keyframes pulse { 50% { opacity: .55; } }
 @media (prefers-reduced-motion: reduce) { .loading { animation: none; } }
 
-
 .ig-crop {
   --ig-top: 54px;
   position: absolute;
@@ -356,6 +338,9 @@ code {
   overflow: hidden;
   background: var(--surface);
 }
+.ig-crop:not(.ready):not(.failed) { animation: pulse 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .ig-crop:not(.ready) { animation: none; } }
+
 .ig-crop iframe {
   position: absolute;
   top: 0;
@@ -364,11 +349,14 @@ code {
   height: 900px;
   border: 0;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity .25s ease;
   transform-origin: 0 0;
   transform:
     scale(calc(var(--s, .55) * var(--z, 1)))
     translate(calc(-1 * var(--dx, 0px)), calc(-1 * (var(--ig-top) + var(--dy, 0px))));
 }
+.ig-crop.ready iframe { opacity: 1; }
 
 .embed {
   width: min(100%, 540px);
@@ -404,7 +392,6 @@ code {
   position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap;
 }
-
 
 .toolbar {
   position: sticky;
@@ -476,7 +463,6 @@ code {
 }
 .seg button[aria-pressed="true"] { background: var(--bg); color: var(--accent-text); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
 
-/* ============ Feed ============ */
 .feed {
   display: flex;
   flex-direction: column;
@@ -510,7 +496,6 @@ code {
 .post-tags a:hover { color: var(--accent-text); }
 
 .post .embed { width: 100%; }
-
 
 .embed.pending {
   aspect-ratio: 4 / 5;
@@ -550,7 +535,8 @@ const COMIC = {
   instagram: "izonfalzo",   
   showCaptions: true,
 
-  
+  maxParallelEmbeds: 4,
+
   tagOrder: ["physics", "sweet", "sour"],
 
   defaultShape: "square",
@@ -581,14 +567,12 @@ const COMIC = {
     { link: "https://www.instagram.com/p/DbR0_yDFX_6/?utm_source=ig_web_copy_link&rpxt=MzRlODBiNWFlZA==", title: "Passion", tags: ["physics"]},
     { link: "https://www.instagram.com/p/DfCiK8HFQNv/?utm_source=ig_web_copy_link&obrf=MzRlODBiNWFlZA==", title: "Midterm", tags: ["physics"]},
     { link: "https://www.instagram.com/p/DfPeZvqlDA1/?utm_source=ig_web_copy_link&mdxt=MzRlODBiNWFlZA==", title: ":(", tags: ["savory"]}
-    // { link: "https://www.instagram.com/p/XXXXXXXXXXX/", title: "Rainy Day", date: "2026-03-20", tags: ["cats"] },
   ]
 };
   </script>
   <script>
     (() => {
   const app = document.getElementById("app");
-
 
   const esc = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -624,10 +608,9 @@ const COMIC = {
         id = id * 64n + BigInt(v);
       }
       const ms = Number((id >> 23n) + 1314220021721n);
-      return ms > 1262304000000 && ms < Date.now() + 864e5 ? ms : null; // sanity check
+      return ms > 1262304000000 && ms < Date.now() + 864e5 ? ms : null;
     } catch (e) { return null; }
   }
-
 
   const problems = [];
   const all = (COMIC.comics || []).map((entry, i) => {
@@ -644,9 +627,9 @@ const COMIC = {
     return c;
   }).filter(Boolean);
 
-
   all.sort((a, b) => (a.time ?? Infinity) - (b.time ?? Infinity) || a.order - b.order);
 
+  const byId = new Map(all.map((c) => [c.id, c]));
 
   const tagMap = new Map();
   (COMIC.tagOrder || []).forEach((t) => tagMap.set(slugify(t), t));
@@ -660,7 +643,6 @@ const COMIC = {
   const SORT_KEY = "comics-sort";
   const getView = () => (store(VIEW_KEY) === "feed" ? "feed" : "grid");
   const getSort = () => (store(SORT_KEY) === "oldest" ? "oldest" : "newest");
-
 
   let igRequested = false;
   function processEmbeds() {
@@ -679,7 +661,6 @@ const COMIC = {
       <a href="${esc(c.permalink)}" target="_blank" rel="noopener">View on Instagram</a>
     </blockquote>`;
 
-
   let lazy = null;
   function watchLazy() {
     lazy = new IntersectionObserver((entries) => {
@@ -688,12 +669,12 @@ const COMIC = {
         if (!e.isIntersecting) return;
         const el = e.target;
         lazy.unobserve(el);
-        el.innerHTML = embedHTML(newestFirst.find((c) => c.id === el.dataset.id));
+        el.innerHTML = embedHTML(byId.get(el.dataset.id));
         el.classList.remove("pending");
         added = true;
       });
       if (added) processEmbeds();
-    }, { rootMargin: "1200px 0px" });
+    }, { rootMargin: "800px 0px" });
     app.querySelectorAll(".embed.pending").forEach((el) => lazy.observe(el));
   }
 
@@ -714,12 +695,79 @@ const COMIC = {
   }
   const cropStyle = (c) => ratioStyle(shapeRatio(c));
 
-
   function setRatio(box, r) {
     ratioStyle(r).split(";").forEach((pair) => {
       const [k, v] = pair.split(":");
       box.style.setProperty(k, v);
     });
+  }
+
+  const cropHTML = (c) =>
+    `<div class="ig-crop" data-id="${esc(c.id)}" ${c.shape ? "" : "data-auto"} style="${cropStyle(c)}"><iframe data-id="${esc(c.id)}" data-src="https://www.instagram.com/p/${esc(c.id)}/embed/" tabindex="-1" aria-hidden="true" scrolling="no" title=""></iframe></div>`;
+
+  const LOAD_TIMEOUT = 12000;
+  const MAX_PARALLEL = Math.max(1, COMIC.maxParallelEmbeds || 4);
+  let gen = 0;
+  let active = 0;
+  let waiting = [];
+
+  const frameIO = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      frameIO.unobserve(e.target);
+      waiting.push(e.target);
+    });
+    pump();
+  }, { rootMargin: "500px 0px" });
+
+  function pump() {
+    while (active < MAX_PARALLEL && waiting.length) {
+      const f = waiting.shift();
+      if (f.isConnected) startFrame(f);
+    }
+  }
+
+  function startFrame(f) {
+    const myGen = gen;
+    const attempt = Number(f.dataset.attempt || 0);
+    let finished = false;
+    active++;
+
+    const done = (ok) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      if (myGen !== gen) return;
+      active--;
+      const box = f.closest(".ig-crop");
+      if (ok) {
+        box && box.classList.add("ready");
+      } else if (attempt < 1 && f.isConnected) {
+        f.dataset.attempt = String(attempt + 1);
+        setTimeout(() => { if (myGen === gen && f.isConnected) { waiting.push(f); pump(); } }, 1500);
+      } else if (box) {
+        box.classList.add("failed");
+        box.innerHTML = `<div class="missing"><strong>Preview unavailable</strong>Open the comic to view it</div>`;
+      }
+      pump();
+    };
+
+    f._done = done;
+    const timer = setTimeout(() => done(false), LOAD_TIMEOUT);
+    f.addEventListener("load", () => {
+      setTimeout(() => done(true), 600);
+    }, { once: true });
+    f.addEventListener("error", () => done(false), { once: true });
+
+    const url = f.dataset.src + (attempt ? `?r=${Date.now()}` : "");
+    f.src = url;
+  }
+
+  function resetFrames() {
+    gen++;
+    active = 0;
+    waiting = [];
+    frameIO.disconnect();
   }
 
   
@@ -734,6 +782,7 @@ const COMIC = {
     if (!h) return;
     const frame = [...document.querySelectorAll(".ig-crop iframe")].find((f) => f.contentWindow === e.source);
     if (!frame) return;
+    if (frame._done) frame._done(true);
     measured.set(frame.dataset.id, h);
     applyAutoShapes();
   });
@@ -757,13 +806,13 @@ const COMIC = {
     });
   }
 
-
   const resizer = new ResizeObserver((entries) =>
     entries.forEach((e) => e.target.style.setProperty("--s", e.contentRect.width / 400))
   );
 
-
   function renderHome(tagSlug) {
+    resetFrames();
+    resizer.disconnect();
     const view = getView();
     const sort = getSort();
     const tagName = tagSlug ? tagMap.get(tagSlug) : null;
@@ -812,13 +861,7 @@ const COMIC = {
       body = `<ul class="grid">${list.map((c) => `
         <li>
           <a class="tile" href="${link(c)}" aria-label="${esc(c.label)}">
-            <div class="thumb">
-              ${c.thumb
-                ? `<img src="${esc(c.thumb)}" alt="" loading="lazy">`
-                : `<div class="ig-crop" data-id="${esc(c.id)}" ${c.shape ? "" : "data-auto"} style="${cropStyle(c)}"><iframe data-id="${esc(c.id)}" src="https://www.instagram.com/p/${esc(c.id)}/embed/" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" title=""></iframe></div>`}
-            </div>
-            ${c.title ? `<!--span class="tile-title">${esc(c.title)}</span-->` : ""}
-            
+            <div class="thumb">${cropHTML(c)}</div>
           </a>
         </li>`).join("")}
       </ul>`;
@@ -845,6 +888,7 @@ const COMIC = {
     if (view === "feed") watchLazy();
     else {
       app.querySelectorAll(".ig-crop").forEach((el) => resizer.observe(el));
+      app.querySelectorAll(".ig-crop iframe[data-src]").forEach((f) => frameIO.observe(f));
       applyAutoShapes(); 
     }
   }
@@ -912,13 +956,13 @@ const COMIC = {
     return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">${paths}</svg>`;
   }
 
-
   const state = { keys: null };
 
   function route() {
     const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
     state.keys = null;
     resizer.disconnect();
+    resetFrames();
     if (lazy) { lazy.disconnect(); lazy = null; }
 
     if (parts[0] === "random" && all.length) {
@@ -939,7 +983,6 @@ const COMIC = {
     if (e.key === "ArrowLeft" && state.keys.back) location.hash = state.keys.back;
   });
 
-  // document.getElementById("site-title").textContent = COMIC.title;
   document.getElementById("site-footer").textContent =
     `© ${new Date().getFullYear()} I-see Warisa Jaidee`;
 
