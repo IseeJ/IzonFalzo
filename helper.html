@@ -8,12 +8,15 @@
   @font-face {
     font-family: "Bobbol";
     src: local("Bobbol Regular"), local("Bobbol-Regular"), url("Bobbol-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
     font-display: swap;
   }
   :root { --bg: #fff; --ink: #1a1a1a; --muted: #8a8a8a; color-scheme: light; }
   @media (prefers-color-scheme: dark) {
     :root { --bg: #161616; --ink: #ededed; --muted: #7a7a7a; color-scheme: dark; }
   }
+  *, *::before, *::after { font-family: "Bobbol", system-ui, sans-serif !important; font-weight: 400 !important; font-style: normal !important; }
   body {
     margin: 0;
     min-height: 100vh;
@@ -21,10 +24,11 @@
     place-items: center;
     background: var(--bg);
     color: var(--ink);
-    font: 17px/1.6 "Bobbol", system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
   }
   main { max-width: 420px; padding: 40px 24px; }
-  h1 { font-weight: 400; font-size: 2.4rem; line-height: 1.1; margin: 0 0 28px; }
+  h1 { font-size: 2.4rem; line-height: 1.1; margin: 0 0 28px; }
   p { margin: 0 0 14px; color: var(--muted); }
   .bm {
     display: inline-block;
@@ -37,7 +41,7 @@
     cursor: grab;
   }
   button {
-    font: inherit;
+    font-size: inherit;
     color: var(--muted);
     background: none;
     border: 0;
@@ -54,39 +58,29 @@
   <h1>Save Instagram images</h1>
   <p>Drag this button to your bookmarks bar.</p>
   <a class="bm" id="bm" href="#">Save IG images</a>
-  <p>Then open any post on Instagram and click the bookmark.</p>
+  <p id="hint">Then open any post on Instagram and click the bookmark.</p>
   <p>No bookmarks bar? <button id="copy" type="button">Copy code</button> and paste it into the console on the post page.</p>
 </main>
 <script>
 function igSaver() {
-  var m = location.pathname.match(/\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
-  if (!location.hostname.endsWith('instagram.com') || !m) {
-    alert('Open an Instagram post first, then click the bookmark.');
-    return;
-  }
-  var code = m[1];
-  var cookie = function (n) { var r = document.cookie.match('(?:^|; )' + n + '=([^;]*)'); return r ? r[1] : ''; };
-  var headers = { 'X-IG-App-ID': '936619743392459', 'X-CSRFToken': cookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' };
-  var ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-  var mediaId = Array.from(code.slice(0, 11)).reduce(function (id, ch) { return id * 64n + BigInt(ALPHA.indexOf(ch)); }, 0n).toString();
-
   var old = document.getElementById('ig-saver-host');
   if (old) old.remove();
   var host = document.createElement('div');
   host.id = 'ig-saver-host';
   host.style.cssText = 'position:fixed;inset:0;z-index:2147483647';
   var root = host.attachShadow({ mode: 'open' });
+  var F = 'font-family:Bobbol,"Bobbol Regular","Bobbol-Regular",system-ui,sans-serif!important;font-weight:400!important;font-style:normal!important;';
   root.innerHTML = '<style>' +
     ':host{--bg:#fff;--ink:#1a1a1a;--muted:#8a8a8a;--line:#e6e6e6;--tile:#f4f4f4}' +
     '@media (prefers-color-scheme:dark){:host{--bg:#161616;--ink:#ededed;--muted:#7a7a7a;--line:#2a2a2a;--tile:#1f1f1f}}' +
-    '.wrap{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px;font:15px/1.5 Bobbol,"Bobbol Regular",system-ui,sans-serif;color:var(--ink)}' +
+    '*{' + F + 'letter-spacing:normal}' +
+    '.wrap{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px;font-size:15px;line-height:1.5;color:var(--ink)}' +
     '.panel{background:var(--bg);border-radius:12px;width:min(960px,100%);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}' +
-    '.top{display:flex;align-items:center;gap:18px;padding:18px 22px;border-bottom:1px solid var(--line)}' +
+    '.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding:18px 22px;border-bottom:1px solid var(--line)}' +
+    '.name{font-size:15px;color:var(--ink);background:none;border:0;border-bottom:1px solid var(--line);padding:4px 0;width:220px;max-width:100%;outline:none}' +
+    '.name:focus{border-bottom-color:var(--ink)}' +
     '.meta{flex:1;color:var(--muted)}' +
-    '.name{display:flex;align-items:baseline;gap:2px;color:var(--muted)}' +
-    '.name input{font:inherit;color:var(--ink);background:none;border:0;border-bottom:1px solid var(--line);padding:2px 0;width:160px;outline:none}' +
-    '.name input:focus{border-color:var(--ink)}' +
-    'button,a.dl{font:inherit;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}' +
+    'button,a.dl{font-size:inherit;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}' +
     'button:disabled{color:var(--muted);text-decoration:none;cursor:default}' +
     'button.x{text-decoration:none;font-size:18px}' +
     '.grid{list-style:none;margin:0;padding:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:22px;overflow:auto}' +
@@ -97,10 +91,12 @@ function igSaver() {
     '.msg{padding:28px 22px;margin:0;color:var(--muted)}' +
     '</style>' +
     '<div class="wrap"><div class="panel">' +
-    '<div class="top"><span class="meta"></span>' +
-    '<label class="name" hidden><input type="text" spellcheck="false" aria-label="PDF file name">.pdf</label>' +
+    '<div class="top">' +
+    '<input class="name" type="text" aria-label="File name" spellcheck="false" hidden>' +
+    '<span class="meta"></span>' +
     '<button class="pdf" hidden>Save as PDF</button>' +
-    '<button class="all" hidden>Download all</button><button class="x" aria-label="Close">✕</button></div>' +
+    '<button class="all" hidden>Download all</button>' +
+    '<button class="x" aria-label="Close">✕</button></div>' +
     '<p class="msg">Loading…</p><ol class="grid" hidden></ol></div></div>';
   document.body.appendChild(host);
 
@@ -110,6 +106,24 @@ function igSaver() {
   document.addEventListener('keydown', onKey);
   $('.x').onclick = close;
   $('.wrap').onclick = function (e) { if (e.target === e.currentTarget) close(); };
+
+  var m = location.pathname.match(/\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
+  if (!location.hostname.endsWith('instagram.com') || !m) {
+    $('.msg').textContent = 'Open an Instagram post first, then click the bookmark again.';
+    return;
+  }
+  var code = m[1];
+  var cookie = function (n) { var r = document.cookie.match('(?:^|; )' + n + '=([^;]*)'); return r ? r[1] : ''; };
+  var headers = { 'X-IG-App-ID': '936619743392459', 'X-CSRFToken': cookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' };
+  var ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  var mediaId = Array.from(code.slice(0, 11)).reduce(function (id, ch) { return id * 64n + BigInt(ALPHA.indexOf(ch)); }, 0n).toString();
+
+  var nameEl = $('.name');
+  nameEl.value = code;
+  var base = function () {
+    var v = nameEl.value.trim().replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '_').replace(/\.(pdf|jpe?g|png|webp|mp4)$/i, '');
+    return v || code;
+  };
 
   function pickBest(n) {
     var isVideo = n.is_video || n.media_type === 2;
@@ -132,6 +146,7 @@ function igSaver() {
     if (!j.items || !j.items[0]) throw new Error('api: no items');
     return j.items[0];
   }
+
   async function viaGraphQL() {
     var body = new URLSearchParams({
       variables: JSON.stringify({ shortcode: code, fetch_tagged_user_count: null, hoisted_comment_id: null, hoisted_reply_id: null }),
@@ -151,15 +166,19 @@ function igSaver() {
     return e ? e[1].toLowerCase() : (item.type === 'video' ? 'mp4' : 'jpg');
   }
 
+  function triggerDownload(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+  }
+
   async function save(item, name) {
     try {
       var r = await fetch(item.url);
       if (!r.ok) throw new Error(r.status);
-      var url = URL.createObjectURL(await r.blob());
-      var a = document.createElement('a');
-      a.href = url; a.download = name;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+      triggerDownload(await r.blob(), name);
     } catch (e) {
       window.open(item.url, '_blank');
     }
@@ -237,16 +256,18 @@ function igSaver() {
     }
     if (!media) {
       $('.msg').textContent = 'Instagram didn’t return this post (' + errors.join(', ') + '). Make sure you’re logged in and the page is a post.';
-            return;
+      return;
     }
     var nodes = media.carousel_media ||
       (media.edge_sidecar_to_children && media.edge_sidecar_to_children.edges.map(function (e) { return e.node; })) ||
       [media];
     var items = nodes.map(pickBest).filter(function (i) { return i.url; });
+    var fileFor = function (i) {
+      return items.length > 1 ? base() + '_' + (i + 1) + '.' + ext(items[i]) : base() + '.' + ext(items[i]);
+    };
     var grid = $('.grid');
 
     items.forEach(function (item, i) {
-      var name = items.length > 1 ? code + '_' + (i + 1) + '.' + ext(item) : code + '.' + ext(item);
       var li = document.createElement('li');
       var frame = document.createElement('div');
       frame.className = 'frame';
@@ -257,10 +278,10 @@ function igSaver() {
       var info = document.createElement('div');
       info.className = 'info';
       var size = document.createElement('span');
-      size.textContent = '#' + (i + 1) + '   ' + (item.w && item.h ? item.w + '×' + item.h : item.type);
+      size.textContent = (i + 1) + '   ' + (item.w && item.h ? item.w + '×' + item.h : item.type);
       var a = document.createElement('a');
       a.className = 'dl'; a.href = item.url; a.textContent = 'Download';
-      a.onclick = function (e) { e.preventDefault(); save(item, name); };
+      a.onclick = function (e) { e.preventDefault(); save(item, fileFor(i)); };
       info.append(size, a);
       li.append(frame, info);
       grid.appendChild(li);
@@ -268,7 +289,9 @@ function igSaver() {
 
     $('.msg').hidden = true;
     grid.hidden = false;
-    $('.meta').textContent = items.length + (items.length === 1 ? ' file' : ' files') + ' from ' + code;
+    nameEl.hidden = false;
+    $('.meta').textContent = items.length + (items.length === 1 ? ' file' : ' files');
+
     var all = $('.all');
     if (items.length > 1) {
       all.hidden = false;
@@ -276,7 +299,7 @@ function igSaver() {
         all.disabled = true;
         for (var i = 0; i < items.length; i++) {
           all.textContent = 'Saving ' + (i + 1) + ' of ' + items.length + '…';
-          await save(items[i], code + '_' + (i + 1) + '.' + ext(items[i]));
+          await save(items[i], fileFor(i));
           await new Promise(function (r) { setTimeout(r, 400); });
         }
         all.textContent = 'Download all';
@@ -287,16 +310,8 @@ function igSaver() {
     var pics = items.filter(function (it) { return it.type === 'image'; });
     var pdfBtn = $('.pdf');
     if (pics.length) {
-      var nameBox = $('.name');
-      var nameInput = $('.name input');
-      nameInput.value = code;
-      nameBox.hidden = false;
       pdfBtn.hidden = false;
-      nameInput.onkeydown = function (e) { e.stopPropagation(); if (e.key === 'Enter') pdfBtn.click(); };
-      nameInput.onkeyup = nameInput.onkeypress = function (e) { e.stopPropagation(); };
       pdfBtn.onclick = async function () {
-        if (pdfBtn.disabled) return;
-        var fileName = nameInput.value.replace(/\.pdf$/i, '').replace(/[\\/:*?"<>|]+/g, '-').trim() || code;
         pdfBtn.disabled = true;
         try {
           var pages = [];
@@ -304,36 +319,39 @@ function igSaver() {
             pdfBtn.textContent = 'Preparing ' + (i + 1) + ' of ' + pics.length + '…';
             pages.push(await imageForPdf(pics[i]));
           }
-          var url = URL.createObjectURL(buildPdf(pages));
-          var a = document.createElement('a');
-          a.href = url; a.download = fileName + '.pdf';
-          document.body.appendChild(a); a.click(); a.remove();
-          setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
-          pdfBtn.textContent = pics.length < items.length ? 'Saved (videos skipped)' : 'Saved';
+          triggerDownload(buildPdf(pages), base() + '.pdf');
+          pdfBtn.textContent = pics.length < items.length ? 'Saved, videos skipped' : 'Saved';
         } catch (e) {
-          pdfBtn.textContent = 'PDF failed';
-          alert('Couldn’t load the images for the PDF (' + e.message + '). Try reloading the post and clicking the bookmark again.');
+          pdfBtn.textContent = 'PDF failed, reload the post and try again';
         }
-        setTimeout(function () { pdfBtn.textContent = 'Save as PDF'; pdfBtn.disabled = false; }, 2500);
+        setTimeout(function () { pdfBtn.textContent = 'Save as PDF'; pdfBtn.disabled = false; }, 3000);
       };
     }
   })();
 }
+
 var source = '(' + igSaver.toString() + ')();';
 var bm = document.getElementById('bm');
+var hint = document.getElementById('hint');
 bm.href = 'javascript:' + encodeURIComponent(source);
 bm.addEventListener('click', function (e) {
   e.preventDefault();
-  alert('Drag this to your bookmarks bar, then click it on an Instagram post.');
+  hint.textContent = 'Drag it to your bookmarks bar instead of clicking it here. Then use it on an Instagram post.';
 });
 document.getElementById('copy').addEventListener('click', async function (e) {
+  var btn = e.target;
   try {
     await navigator.clipboard.writeText(source);
-    e.target.textContent = 'Copied';
   } catch (err) {
-    prompt('Copy this code:', source);
+    var t = document.createElement('textarea');
+    t.value = source;
+    document.body.appendChild(t);
+    t.select();
+    document.execCommand('copy');
+    t.remove();
   }
-  setTimeout(function () { e.target.textContent = 'Copy code'; }, 2000);
+  btn.textContent = 'Copied';
+  setTimeout(function () { btn.textContent = 'Copy code'; }, 2000);
 });
 </script>
 </body>
