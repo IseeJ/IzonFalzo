@@ -83,6 +83,9 @@ function igSaver() {
     '.panel{background:var(--bg);border-radius:12px;width:min(960px,100%);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}' +
     '.top{display:flex;align-items:center;gap:18px;padding:18px 22px;border-bottom:1px solid var(--line)}' +
     '.meta{flex:1;color:var(--muted)}' +
+    '.name{display:flex;align-items:baseline;gap:2px;color:var(--muted)}' +
+    '.name input{font:inherit;color:var(--ink);background:none;border:0;border-bottom:1px solid var(--line);padding:2px 0;width:160px;outline:none}' +
+    '.name input:focus{border-color:var(--ink)}' +
     'button,a.dl{font:inherit;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}' +
     'button:disabled{color:var(--muted);text-decoration:none;cursor:default}' +
     'button.x{text-decoration:none;font-size:18px}' +
@@ -95,6 +98,7 @@ function igSaver() {
     '</style>' +
     '<div class="wrap"><div class="panel">' +
     '<div class="top"><span class="meta"></span>' +
+    '<label class="name" hidden><input type="text" spellcheck="false" aria-label="PDF file name">.pdf</label>' +
     '<button class="pdf" hidden>Save as PDF</button>' +
     '<button class="all" hidden>Download all</button><button class="x" aria-label="Close">✕</button></div>' +
     '<p class="msg">Loading…</p><ol class="grid" hidden></ol></div></div>';
@@ -283,8 +287,16 @@ function igSaver() {
     var pics = items.filter(function (it) { return it.type === 'image'; });
     var pdfBtn = $('.pdf');
     if (pics.length) {
+      var nameBox = $('.name');
+      var nameInput = $('.name input');
+      nameInput.value = code;
+      nameBox.hidden = false;
       pdfBtn.hidden = false;
+      nameInput.onkeydown = function (e) { e.stopPropagation(); if (e.key === 'Enter') pdfBtn.click(); };
+      nameInput.onkeyup = nameInput.onkeypress = function (e) { e.stopPropagation(); };
       pdfBtn.onclick = async function () {
+        if (pdfBtn.disabled) return;
+        var fileName = nameInput.value.replace(/\.pdf$/i, '').replace(/[\\/:*?"<>|]+/g, '-').trim() || code;
         pdfBtn.disabled = true;
         try {
           var pages = [];
@@ -294,7 +306,7 @@ function igSaver() {
           }
           var url = URL.createObjectURL(buildPdf(pages));
           var a = document.createElement('a');
-          a.href = url; a.download = code + '.pdf';
+          a.href = url; a.download = fileName + '.pdf';
           document.body.appendChild(a); a.click(); a.remove();
           setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
           pdfBtn.textContent = pics.length < items.length ? 'Saved (videos skipped)' : 'Saved';
