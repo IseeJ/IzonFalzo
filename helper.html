@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Save Instagram images</title>
+<style>
+  @font-face {
+    font-family: "Bobbol";
+    src: local("Bobbol Regular"), local("Bobbol-Regular"), url("Bobbol-Regular.ttf") format("truetype");
+    font-display: swap;
+  }
+  :root { --bg: #fff; --ink: #1a1a1a; --muted: #8a8a8a; color-scheme: light; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161616; --ink: #ededed; --muted: #7a7a7a; color-scheme: dark; }
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.6 "Bobbol", system-ui, sans-serif;
+  }
+  main { max-width: 420px; padding: 40px 24px; }
+  h1 { font-weight: 400; font-size: 2.4rem; line-height: 1.1; margin: 0 0 28px; }
+  p { margin: 0 0 14px; color: var(--muted); }
+  .bm {
+    display: inline-block;
+    margin: 18px 0 40px;
+    padding: 12px 26px;
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    color: var(--ink);
+    text-decoration: none;
+    cursor: grab;
+  }
+  button {
+    font: inherit;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Save Instagram images</h1>
+  <p>Drag this button to your bookmarks bar.</p>
+  <a class="bm" id="bm" href="#">Save IG images</a>
+  <p>Then open any post on Instagram and click the bookmark.</p>
+  <p>No bookmarks bar? <button id="copy" type="button">Copy code</button> and paste it into the console on the post page.</p>
+</main>
+<script>
+function igSaver() {
+  var m = location.pathname.match(/\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
+  if (!location.hostname.endsWith('instagram.com') || !m) {
+    alert('Open an Instagram post first, then click the bookmark.');
+    return;
+  }
+  var code = m[1];
+  var cookie = function (n) { var r = document.cookie.match('(?:^|; )' + n + '=([^;]*)'); return r ? r[1] : ''; };
+  var headers = { 'X-IG-App-ID': '936619743392459', 'X-CSRFToken': cookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' };
+  var ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  var mediaId = Array.from(code.slice(0, 11)).reduce(function (id, ch) { return id * 64n + BigInt(ALPHA.indexOf(ch)); }, 0n).toString();
+
+  var old = document.getElementById('ig-saver-host');
+  if (old) old.remove();
+  var host = document.createElement('div');
+  host.id = 'ig-saver-host';
+  host.style.cssText = 'position:fixed;inset:0;z-index:2147483647';
+  var root = host.attachShadow({ mode: 'open' });
+  root.innerHTML = '<style>' +
+    ':host{--bg:#fff;--ink:#1a1a1a;--muted:#8a8a8a;--line:#e6e6e6;--tile:#f4f4f4}' +
+    '@media (prefers-color-scheme:dark){:host{--bg:#161616;--ink:#ededed;--muted:#7a7a7a;--line:#2a2a2a;--tile:#1f1f1f}}' +
+    '.wrap{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px;font:15px/1.5 Bobbol,"Bobbol Regular",system-ui,sans-serif;color:var(--ink)}' +
+    '.panel{background:var(--bg);border-radius:12px;width:min(960px,100%);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}' +
+    '.top{display:flex;align-items:center;gap:18px;padding:18px 22px;border-bottom:1px solid var(--line)}' +
+    '.meta{flex:1;color:var(--muted)}' +
+    'button,a.dl{font:inherit;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}' +
+    'button:disabled{color:var(--muted);text-decoration:none;cursor:default}' +
+    'button.x{text-decoration:none;font-size:18px}' +
+    '.grid{list-style:none;margin:0;padding:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:22px;overflow:auto}' +
+    '.frame{background:var(--tile);border-radius:6px;aspect-ratio:4/5;overflow:hidden}' +
+    '.frame img,.frame video{width:100%;height:100%;object-fit:contain;display:block}' +
+    '.info{display:flex;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:13px}' +
+    '.info a.dl{font-size:13px}' +
+    '.msg{padding:28px 22px;margin:0;color:var(--muted)}' +
+    '</style>' +
+    '<div class="wrap"><div class="panel">' +
+    '<div class="top"><span class="meta"></span>' +
+    '<button class="pdf" hidden>Save as PDF</button>' +
+    '<button class="all" hidden>Download all</button><button class="x" aria-label="Close">✕</button></div>' +
+    '<p class="msg">Loading…</p><ol class="grid" hidden></ol></div></div>';
+  document.body.appendChild(host);
+
+  var $ = function (s) { return root.querySelector(s); };
+  var close = function () { host.remove(); document.removeEventListener('keydown', onKey); };
+  var onKey = function (e) { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  $('.x').onclick = close;
+  $('.wrap').onclick = function (e) { if (e.target === e.currentTarget) close(); };
+
+  function pickBest(n) {
+    var isVideo = n.is_video || n.media_type === 2;
+    if (isVideo) {
+      var vv = (n.video_versions || []).slice().sort(function (a, b) { return b.width - a.width; })[0];
+      var vu = n.video_url || (vv && vv.url);
+      if (vu) return { type: 'video', url: vu, w: (vv && vv.width) || (n.dimensions && n.dimensions.width), h: (vv && vv.height) || (n.dimensions && n.dimensions.height) };
+    }
+    var c = ((n.image_versions2 && n.image_versions2.candidates) || []).slice().sort(function (a, b) { return b.width - a.width; })[0];
+    if (c) return { type: 'image', url: c.url, w: c.width, h: c.height };
+    var d = (n.display_resources || []).slice().sort(function (a, b) { return b.config_width - a.config_width; })[0];
+    if (d) return { type: 'image', url: d.src, w: d.config_width, h: d.config_height };
+    return { type: 'image', url: n.display_url, w: n.dimensions && n.dimensions.width, h: n.dimensions && n.dimensions.height };
+  }
+
+  async function viaApi() {
+    var r = await fetch('/api/v1/media/' + mediaId + '/info/', { credentials: 'include', headers: headers });
+    if (!r.ok) throw new Error('api ' + r.status);
+    var j = await r.json();
+    if (!j.items || !j.items[0]) throw new Error('api: no items');
+    return j.items[0];
+  }
+  async function viaGraphQL() {
+    var body = new URLSearchParams({
+      variables: JSON.stringify({ shortcode: code, fetch_tagged_user_count: null, hoisted_comment_id: null, hoisted_reply_id: null }),
+      doc_id: '8845758582119845'
+    });
+    var r = await fetch('/graphql/query', { method: 'POST', credentials: 'include',
+      headers: Object.assign({ 'Content-Type': 'application/x-www-form-urlencoded' }, headers), body: body });
+    if (!r.ok) throw new Error('graphql ' + r.status);
+    var j = await r.json();
+    var media = j && j.data && j.data.xdt_shortcode_media;
+    if (!media) throw new Error('graphql: no media');
+    return media;
+  }
+
+  function ext(item) {
+    var e = new URL(item.url).pathname.match(/\.(jpe?g|png|webp|heic|mp4)$/i);
+    return e ? e[1].toLowerCase() : (item.type === 'video' ? 'mp4' : 'jpg');
+  }
+
+  async function save(item, name) {
+    try {
+      var r = await fetch(item.url);
+      if (!r.ok) throw new Error(r.status);
+      var url = URL.createObjectURL(await r.blob());
+      var a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+    } catch (e) {
+      window.open(item.url, '_blank');
+    }
+  }
+
+  function jpegInfo(b) {
+    if (b[0] !== 0xFF || b[1] !== 0xD8) return null;
+    var i = 2;
+    while (i + 9 < b.length) {
+      if (b[i] !== 0xFF) { i++; continue; }
+      var mk = b[i + 1];
+      if (mk === 0xFF) { i++; continue; }
+      if (mk === 0xD8 || mk === 0x01 || (mk >= 0xD0 && mk <= 0xD7)) { i += 2; continue; }
+      var len = (b[i + 2] << 8) | b[i + 3];
+      if (mk >= 0xC0 && mk <= 0xCF && mk !== 0xC4 && mk !== 0xC8 && mk !== 0xCC) {
+        return { h: (b[i + 5] << 8) | b[i + 6], w: (b[i + 7] << 8) | b[i + 8], c: b[i + 9] };
+      }
+      i += 2 + len;
+    }
+    return null;
+  }
+
+  async function imageForPdf(item) {
+    var r = await fetch(item.url);
+    if (!r.ok) throw new Error('image ' + r.status);
+    var blob = await r.blob();
+    var bytes = new Uint8Array(await blob.arrayBuffer());
+    var info = jpegInfo(bytes);
+    if (info && (info.c === 3 || info.c === 1)) {
+      return { bytes: bytes, w: info.w, h: info.h, cs: info.c === 1 ? 'DeviceGray' : 'DeviceRGB' };
+    }
+    var bmp = await createImageBitmap(blob);
+    var cv = document.createElement('canvas');
+    cv.width = bmp.width; cv.height = bmp.height;
+    cv.getContext('2d').drawImage(bmp, 0, 0);
+    var out = await new Promise(function (res) { cv.toBlob(res, 'image/jpeg', 0.95); });
+    return { bytes: new Uint8Array(await out.arrayBuffer()), w: bmp.width, h: bmp.height, cs: 'DeviceRGB' };
+  }
+
+  function buildPdf(images) {
+    var enc = new TextEncoder(), parts = [], offset = 0, offsets = [];
+    var push = function (x) { var b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); offset += b.length; };
+    var obj = function (id, body) { offsets[id] = offset; push(id + ' 0 obj\n'); body(); push('\nendobj\n'); };
+    var n = images.length, total = 3 + n * 3;
+    push('%PDF-1.4\n%\u00e2\u00e3\u00cf\u00d3\n');
+    obj(1, function () { push('<< /Type /Catalog /Pages 2 0 R >>'); });
+    var kids = images.map(function (_, i) { return (3 + i * 3) + ' 0 R'; }).join(' ');
+    obj(2, function () { push('<< /Type /Pages /Kids [' + kids + '] /Count ' + n + ' >>'); });
+    images.forEach(function (im, i) {
+      var p = 3 + i * 3, c = p + 1, x = p + 2;
+      obj(p, function () {
+        push('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + im.w + ' ' + im.h + '] ' +
+          '/Resources << /XObject << /Im0 ' + x + ' 0 R >> >> /Contents ' + c + ' 0 R >>');
+      });
+      var s = 'q ' + im.w + ' 0 0 ' + im.h + ' 0 0 cm /Im0 Do Q';
+      obj(c, function () { push('<< /Length ' + s.length + ' >>\nstream\n' + s + '\nendstream'); });
+      obj(x, function () {
+        push('<< /Type /XObject /Subtype /Image /Width ' + im.w + ' /Height ' + im.h +
+          ' /ColorSpace /' + im.cs + ' /BitsPerComponent 8 /Filter /DCTDecode /Length ' + im.bytes.length + ' >>\nstream\n');
+        push(im.bytes);
+        push('\nendstream');
+      });
+    });
+    var xref = offset;
+    push('xref\n0 ' + total + '\n0000000000 65535 f \n');
+    for (var k = 1; k < total; k++) push(String(offsets[k]).padStart(10, '0') + ' 00000 n \n');
+    push('trailer\n<< /Size ' + total + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF\n');
+    return new Blob(parts, { type: 'application/pdf' });
+  }
+
+  (async function () {
+    var media = null, errors = [];
+    for (var fn of [viaApi, viaGraphQL]) {
+      try { media = await fn(); break; } catch (e) { errors.push(e.message); }
+    }
+    if (!media) {
+      $('.msg').textContent = 'Instagram didn’t return this post (' + errors.join(', ') + '). Make sure you’re logged in and the page is a post.';
+            return;
+    }
+    var nodes = media.carousel_media ||
+      (media.edge_sidecar_to_children && media.edge_sidecar_to_children.edges.map(function (e) { return e.node; })) ||
+      [media];
+    var items = nodes.map(pickBest).filter(function (i) { return i.url; });
+    var grid = $('.grid');
+
+    items.forEach(function (item, i) {
+      var name = items.length > 1 ? code + '_' + (i + 1) + '.' + ext(item) : code + '.' + ext(item);
+      var li = document.createElement('li');
+      var frame = document.createElement('div');
+      frame.className = 'frame';
+      var el = document.createElement(item.type === 'video' ? 'video' : 'img');
+      el.src = item.url;
+      if (item.type === 'video') { el.controls = true; el.preload = 'metadata'; } else { el.alt = 'Slide ' + (i + 1); }
+      frame.appendChild(el);
+      var info = document.createElement('div');
+      info.className = 'info';
+      var size = document.createElement('span');
+      size.textContent = '#' + (i + 1) + '   ' + (item.w && item.h ? item.w + '×' + item.h : item.type);
+      var a = document.createElement('a');
+      a.className = 'dl'; a.href = item.url; a.textContent = 'Download';
+      a.onclick = function (e) { e.preventDefault(); save(item, name); };
+      info.append(size, a);
+      li.append(frame, info);
+      grid.appendChild(li);
+    });
+
+    $('.msg').hidden = true;
+    grid.hidden = false;
+    $('.meta').textContent = items.length + (items.length === 1 ? ' file' : ' files') + ' from ' + code;
+    var all = $('.all');
+    if (items.length > 1) {
+      all.hidden = false;
+      all.onclick = async function () {
+        all.disabled = true;
+        for (var i = 0; i < items.length; i++) {
+          all.textContent = 'Saving ' + (i + 1) + ' of ' + items.length + '…';
+          await save(items[i], code + '_' + (i + 1) + '.' + ext(items[i]));
+          await new Promise(function (r) { setTimeout(r, 400); });
+        }
+        all.textContent = 'Download all';
+        all.disabled = false;
+      };
+    }
+
+    var pics = items.filter(function (it) { return it.type === 'image'; });
+    var pdfBtn = $('.pdf');
+    if (pics.length) {
+      pdfBtn.hidden = false;
+      pdfBtn.onclick = async function () {
+        pdfBtn.disabled = true;
+        try {
+          var pages = [];
+          for (var i = 0; i < pics.length; i++) {
+            pdfBtn.textContent = 'Preparing ' + (i + 1) + ' of ' + pics.length + '…';
+            pages.push(await imageForPdf(pics[i]));
+          }
+          var url = URL.createObjectURL(buildPdf(pages));
+          var a = document.createElement('a');
+          a.href = url; a.download = code + '.pdf';
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+          pdfBtn.textContent = pics.length < items.length ? 'Saved (videos skipped)' : 'Saved';
+        } catch (e) {
+          pdfBtn.textContent = 'PDF failed';
+          alert('Couldn’t load the images for the PDF (' + e.message + '). Try reloading the post and clicking the bookmark again.');
+        }
+        setTimeout(function () { pdfBtn.textContent = 'Save as PDF'; pdfBtn.disabled = false; }, 2500);
+      };
+    }
+  })();
+}
+var source = '(' + igSaver.toString() + ')();';
+var bm = document.getElementById('bm');
+bm.href = 'javascript:' + encodeURIComponent(source);
+bm.addEventListener('click', function (e) {
+  e.preventDefault();
+  alert('Drag this to your bookmarks bar, then click it on an Instagram post.');
+});
+document.getElementById('copy').addEventListener('click', async function (e) {
+  try {
+    await navigator.clipboard.writeText(source);
+    e.target.textContent = 'Copied';
+  } catch (err) {
+    prompt('Copy this code:', source);
+  }
+  setTimeout(function () { e.target.textContent = 'Copy code'; }, 2000);
+});
+</script>
+</body>
+</html>
