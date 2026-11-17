@@ -89,6 +89,14 @@ function igSaver() {
     '.info{display:flex;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:13px}' +
     '.info a.dl{font-size:13px}' +
     '.msg{padding:28px 22px;margin:0;color:var(--muted)}' +
+    '[hidden]{display:none!important}' +
+    '.entry{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;padding:16px 22px;border-bottom:1px solid var(--line)}' +
+    '.entry label{display:flex;flex-direction:column;gap:2px;color:var(--muted);font-size:12px}' +
+    '.entry input{font-size:15px;color:var(--ink);background:none;border:0;border-bottom:1px solid var(--line);padding:4px 0;outline:none}' +
+    '.entry input:focus{border-bottom-color:var(--ink)}' +
+    '.out{grid-column:1/-1;display:flex;gap:16px;align-items:flex-start}' +
+    '.code{flex:1;margin:0;color:var(--muted);font-size:13px;white-space:pre-wrap;word-break:break-all}' +
+    '@media (max-width:560px){.entry{grid-template-columns:1fr}}' +
     '</style>' +
     '<div class="wrap"><div class="panel">' +
     '<div class="top">' +
@@ -97,6 +105,10 @@ function igSaver() {
     '<button class="pdf" hidden>Save as PDF</button>' +
     '<button class="all" hidden>Download all</button>' +
     '<button class="x" aria-label="Close">✕</button></div>' +
+    '<div class="entry" hidden>' +
+    '<label>Title<input class="title" type="text" spellcheck="false"></label>' +
+    '<label>Tags, comma separated<input class="tags" type="text" spellcheck="false"></label>' +
+    '<div class="out"><p class="code"></p><button class="copy">Copy</button></div></div>' +
     '<p class="msg">Loading…</p><ol class="grid" hidden></ol></div></div>';
   document.body.appendChild(host);
 
@@ -106,6 +118,7 @@ function igSaver() {
   document.addEventListener('keydown', onKey);
   $('.x').onclick = close;
   $('.wrap').onclick = function (e) { if (e.target === e.currentTarget) close(); };
+  $('.panel').addEventListener('keydown', function (e) { if (e.key !== 'Escape') e.stopPropagation(); });
 
   var m = location.pathname.match(/\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
   if (!location.hostname.endsWith('instagram.com') || !m) {
@@ -286,6 +299,41 @@ function igSaver() {
       li.append(frame, info);
       grid.appendChild(li);
     });
+
+    var caption = (media.caption && media.caption.text) ||
+      (media.edge_media_to_caption && media.edge_media_to_caption.edges[0] && media.edge_media_to_caption.edges[0].node.text) || '';
+    var hashtags = Array.from(new Set((caption.match(/#[\p{L}\p{N}_]+/gu) || []).map(function (t) { return t.slice(1).toLowerCase(); })));
+    var firstLine = caption.split('\n').map(function (s) { return s.replace(/#[\p{L}\p{N}_]+/gu, '').trim(); }).find(Boolean) || '';
+    var titleEl = $('.title'), tagsEl = $('.tags'), codeEl = $('.code'), copyBtn = $('.copy');
+    titleEl.value = firstLine.slice(0, 120);
+    tagsEl.value = hashtags.join(', ');
+    var entry = function () {
+      var tags = tagsEl.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+      return '{ link: ' + JSON.stringify(location.href) +
+        ', title: ' + JSON.stringify(titleEl.value.trim()) +
+        ', tags: [' + tags.map(function (t) { return JSON.stringify(t); }).join(', ') + '] }';
+    };
+    var renderEntry = function () { codeEl.textContent = entry(); };
+    titleEl.oninput = renderEntry;
+    tagsEl.oninput = renderEntry;
+    renderEntry();
+    copyBtn.onclick = async function () {
+      var text = entry();
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        var t = document.createElement('textarea');
+        t.value = text;
+        t.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand('copy');
+        t.remove();
+      }
+      copyBtn.textContent = 'Copied';
+      setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1500);
+    };
+    $('.entry').hidden = false;
 
     $('.msg').hidden = true;
     grid.hidden = false;
